@@ -1,0 +1,15 @@
+language: python
+
+services:
+  - docker
+
+before_install:
+- docker build -t speechli-api .
+- docker run -d --name app speechli-api
+- docker ps -a
+
+script:
+- docker exec app python -m unittest discover
+
+after_script:
+- docker rm -f app
