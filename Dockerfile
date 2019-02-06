@@ -4,12 +4,15 @@ FROM python:3.6
 # Setup env
 ENV PYTHONUNBUFFERED 1
 
-# Copy application code into container
-ADD . /usr/src/app
-WORKDIR /usr/src/app/src
-
 # Install application dependencies
-RUN pip3 install -r ../requirements.txt
+WORKDIR /usr/src/app
+COPY .env /usr/src/app
+COPY requirements.txt /usr/src/app
+RUN pip3 install -r requirements.txt
+
+# Copy application code into container
+WORKDIR /usr/src/app/src
+COPY src /usr/src/app/src
 
 # Expose ports
 EXPOSE 5000
