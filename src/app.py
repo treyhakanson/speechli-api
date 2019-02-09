@@ -1,12 +1,13 @@
 from flask import Flask, g
-
 from routes.base import base_bp
+from routes.discovery import discovery_bp
 
 
 def create_app():
     app = Flask(__name__)
     app.url_map.strict_slashes = False
     app.register_blueprint(base_bp)
+    app.register_blueprint(discovery_bp)
 
     @app.teardown_appcontext
     def close_connection(e):

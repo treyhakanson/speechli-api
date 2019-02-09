@@ -1,9 +1,10 @@
 version: "2"
 services:
-  speechli-api:
-    build: .
-    ports:
-      - "5000:5000"
-    volumes:
-      - ./src:/usr/src/app/src
-    command: python app.py
+    speechli-api:
+        build: .
+        ports:
+            - "5000:5000"
+        volumes:
+            - ./src:/usr/src/app/src
+        env_file: ./.env
+        command: python app.py
