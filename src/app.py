@@ -1,5 +1,6 @@
 """Primary application entrypoint."""
 from flask import Flask, g, jsonify
+from flask_cors import CORS
 from routes.base import base_bp
 from routes.discovery import discovery_bp
 from exceptions import ClientException
@@ -8,6 +9,8 @@ from exceptions import ClientException
 def create_app():
     """Create the flask application."""
     app = Flask(__name__)
+    CORS(app)
+
     app.url_map.strict_slashes = False
     app.register_blueprint(base_bp)
     app.register_blueprint(discovery_bp)
