@@ -62,7 +62,7 @@ def _build_suggestions(sentence, results, passages):
     words = sentence.split(" ")
     suggestions = []
     for passage in passages:
-        author = next((result["author"] for result in results if result["id"] == passage["document_id"]), None)
+        author = next((result.get("author", None) for result in results if result["id"] == passage["document_id"]), None)
         suggestion = Suggestion.from_passage(passage, author=author)
         suggestion.trim_to_contain(words)
         suggestions.append(suggestion.to_dict())
