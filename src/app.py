@@ -1,9 +1,12 @@
-from flask import Flask, g
+"""Primary application entrypoint."""
+from flask import Flask, g, jsonify
 from routes.base import base_bp
 from routes.discovery import discovery_bp
+from exceptions import ClientException
 
 
 def create_app():
+    """Create the flask application."""
     app = Flask(__name__)
     app.url_map.strict_slashes = False
     app.register_blueprint(base_bp)
@@ -13,6 +16,12 @@ def create_app():
     def close_connection(e):
         if g.get("db_conn", None):
             g.get("db_conn").close()
+
+    @app.errorhandler(ClientException)
+    def handle_invalid_usage(e):
+        res = jsonify(e.to_dict())
+        res.status_code = e.status_code
+        return res
 
     return app
 

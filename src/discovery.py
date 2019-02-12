@@ -7,11 +7,18 @@ from watson_developer_cloud import DiscoveryV1
 from constants import DISCOVERY_VERSION, DISCOVERY_IAM_URL
 
 
+DISCOVERY_ENV = {
+    "API_KEY": os.environ.get("IAM_API_KEY", None),
+    "ENV_ID": os.environ.get("DISCOVERY_ENV_ID", None),
+    "COLLECTION_ID": os.environ.get("DISCOVERY_COLLECTION_ID", None)
+}
+
+
 def get_discovery_client():
     """Get a IBM discovery engine client."""
     discovery = DiscoveryV1(
         version=DISCOVERY_VERSION,
-        iam_apikey=os.environ.get("IAM_API_KEY"),
+        iam_apikey=DISCOVERY_ENV["API_KEY"],
         url=DISCOVERY_IAM_URL
     )
     return discovery
@@ -19,8 +26,8 @@ def get_discovery_client():
 
 def bulk_upload(fpaths, env_id=None, collection_id=None):
     """Bulk upload JSON documents to a given collection."""
-    env_id = env_id or os.environ.get("DISCOVERY_ENV_ID")
-    collection_id = collection_id or os.environ.get("DISCOVERY_COLLECTION_ID")
+    env_id = env_id or DISCOVERY_ENV["ENV_ID"]
+    collection_id = collection_id or DISCOVERY_ENV["COLLECTION_ID"]
     client = get_discovery_client()
     for fpath in fpaths:
         with fpath.open(mode="r") as f:
