@@ -24,22 +24,36 @@ def get_discovery_client():
     return discovery
 
 
-def bulk_upload(fpaths, env_id=None, collection_id=None):
-    """Bulk upload JSON documents to a given collection."""
+def upload_one(fpath, title, env_id, collection_id):
+    client = get_discovery_client()
     env_id = env_id or DISCOVERY_ENV["ENV_ID"]
     collection_id = collection_id or DISCOVERY_ENV["COLLECTION_ID"]
-    client = get_discovery_client()
-    for fpath in fpaths:
+    with fpath.open(mode="r") as f:
+        client.add_document(
+            env_id,
+            collection_id,
+            file=f,
+            filename=title,
+            file_content_type="application/json"
+        )
+
+
+def bulk_upload(fpaths, env_id=None, collection_id=None):
+    """Bulk upload JSON documents to a given collection."""
+    for i, fpath in enumerate(fpaths):
         with fpath.open(mode="r") as f:
-            title = json.load(f)["title"]
-        with fpath.open(mode="r") as f:
-            client.add_document(
-                env_id,
-                collection_id,
-                file=f,
-                filename=title,
-                file_content_type="application/json"
-            )
+            data = json.load(f)
+        if isinstance(data, dict):
+            title = data["title"]
+            upload_one(fpath, title, env_id, collection_id)
+        else:
+            for datum in data:
+                title = datum["title"]
+                fpath = Path("./tmp")
+                with fpath.open(mode="w") as f:
+                    json.dump(datum, f)
+                upload_one(fpath, title, env_id, collection_id)
+            os.remove(fpath)
 
 
 if __name__ == "__main__":
