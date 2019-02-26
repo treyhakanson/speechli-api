@@ -1,4 +1,4 @@
-"""Watson discovery utilities."""
+''"""Watson discovery utilities."""
 import os
 import json
 from pathlib import Path
@@ -8,7 +8,7 @@ from constants import DISCOVERY_VERSION, DISCOVERY_IAM_URL
 
 
 DISCOVERY_ENV = {
-    "API_KEY": os.environ.get("IAM_API_KEY", None),
+    "API_KEY": os.environ.get("IAM_API_KEY_DISCOVERY", None),
     "ENV_ID": os.environ.get("DISCOVERY_ENV_ID", None),
     "COLLECTION_ID": os.environ.get("DISCOVERY_COLLECTION_ID", None)
 }

@@ -3,6 +3,7 @@ from flask import Flask, g, jsonify
 from flask_cors import CORS
 from routes.base import base_bp
 from routes.discovery import discovery_bp
+from routes.tone_analyzer import tone_analyzer_bp
 from exceptions import ClientException
 
 
@@ -14,6 +15,7 @@ def create_app():
     app.url_map.strict_slashes = False
     app.register_blueprint(base_bp)
     app.register_blueprint(discovery_bp)
+    app.register_blueprint(tone_analyzer_bp)
 
     @app.teardown_appcontext
     def close_connection(e):
