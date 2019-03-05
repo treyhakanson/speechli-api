@@ -1,7 +1,14 @@
 """Routes that make calls to the discovery engine API."""
+from pathlib import Path
+import sys
+path = str(Path().absolute().parent)
+sys.path.insert(0, path)
+
+
 from flask import Blueprint, Response, request, jsonify
 from discovery import DISCOVERY_ENV, get_discovery_client
 from exceptions import ClientException
+
 
 discovery_bp = Blueprint("discovery_bp", __name__)
 

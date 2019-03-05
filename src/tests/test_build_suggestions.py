@@ -1,24 +1,24 @@
-def test_sum():
-    assert 1 + 2 == 3
-    #assert sum([1, 1, 1]) == 6, "Should be 6"
+from pathlib import Path
+import sys
+path = str(Path().absolute().parent)
+sys.path.insert(0, path)
+from routes.discovery import _build_suggestions
+  
+def test_build_suggestions1():
     
-def _build_suggestions(sentence, results, passages):
-    """Build suggestions based on the a sentence and discovery query."""
-    words = sentence.split(" ")
-    suggestions = []
-    for passage in passages:
-        author = next((result.get("author", None) for result in results if result["id"] == passage["document_id"]), None)
-        suggestion = Suggestion.from_passage(passage, author=author)
-        suggestion.trim_to_contain(words)
-        suggestions.append(suggestion.to_dict())
-    return suggestions
-
-
-def test_build_suggestions():
+    sentence = "Change will not come if we wait for some other person, or if we wait for some other time."
+    passages = ["Change will not come if we wait for some other person, or if we wait for some other time.", ""]
+    results = []
+    document_id = 1
+    score = 2
+    text = ""
+    author = ""
+    #print (from_passage(sentence, results), "Working")
+    #assert len(Suggestion(document_id, score, text, author).from_passage(sentence, results)) == 0         
+    
+def test_build_suggestions2():
     
     sentence = "Change will not come if we wait for some other person, or if we wait for some other time."
     passages = []
     results = []
-    #print (_build_suggestions(sentence, results, passages), "Working")
-    assert len(_build_suggestions(sentence, results, passages)) == 0         
-    
+    assert len(_build_suggestions(sentence, results, passages)) == 0 
