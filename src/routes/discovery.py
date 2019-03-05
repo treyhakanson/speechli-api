@@ -96,3 +96,20 @@ def discovery_suggest():
     results = query_res.result["results"]
     suggestions = _build_suggestions(sentence, results, passages)
     return jsonify(suggestions)
+
+@discovery_bp.route("/discovery/authors/", methods=["GET"])
+def discovery_authors():
+    """Return authors in the discovery collection."""
+    return jsonify([{
+        "name": "Barack Obama",
+        "id": "1",
+        "image_url": "https://picsum.photos/100"
+    }, {
+        "name": "Dr. Mantis Tabogan",
+        "id": "2",
+        "image_url": "https://picsum.photos/100"
+    }, {
+        "name": "Helen Keller",
+        "id": "3",
+        "image_url": "https://picsum.photos/100"
+    }])
