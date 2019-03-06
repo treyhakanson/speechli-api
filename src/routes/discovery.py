@@ -2,6 +2,7 @@
 from flask import Blueprint, Response, request, jsonify
 from discovery import DISCOVERY_ENV, get_discovery_client
 from exceptions import ClientException
+from tone_analyzer import analyze_tone
 
 discovery_bp = Blueprint("discovery_bp", __name__)
 
@@ -13,21 +14,23 @@ class Suggestion:
     """Discovery suggestion helper class."""
 
     @staticmethod
-    def from_passage(passage, author=None):
+    def from_passage(passage, author=None, tones=[]):
         """Create a suggestion from a discovery query passage."""
         return Suggestion(
             passage["document_id"],
             " ".join(passage["passage_text"].splitlines()),
             passage["passage_score"],
-            author
+            author,
+            tones
         )
 
-    def __init__(self, document_id, text, score, author):
+    def __init__(self, document_id, text, score, author, tones):
         """Constructor."""
         self._document_id = document_id
         self._text = text
         self._score = score
         self._author = author
+        self._tones = tones
 
     def trim_to_contain(self, should_contain):
         """
@@ -53,7 +56,8 @@ class Suggestion:
             "document_id": self._document_id,
             "text": self._text,
             "score": self._score,
-            "author": self._author
+            "author": self._author,
+            "tones": self._tones
         }
 
 
@@ -63,7 +67,10 @@ def _build_suggestions(sentence, results, passages):
     suggestions = []
     for passage in passages:
         author = next((result.get("author", None) for result in results if result["id"] == passage["document_id"]), None)
-        suggestion = Suggestion.from_passage(passage, author=author)
+        tones = []
+        if len(passage) > 30:
+            tones = analyze_tone(passage)
+        suggestion = Suggestion.from_passage(passage, author=author, tones=tones)
         suggestion.trim_to_contain(words)
         suggestions.append(suggestion.to_dict())
     return suggestions
@@ -94,5 +101,6 @@ def discovery_suggest():
     )
     passages = query_res.result["passages"]
     results = query_res.result["results"]
+
     suggestions = _build_suggestions(sentence, results, passages)
     return jsonify(suggestions)
