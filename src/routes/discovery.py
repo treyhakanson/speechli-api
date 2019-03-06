@@ -107,16 +107,6 @@ def discovery_suggest():
 @discovery_bp.route("/discovery/authors/", methods=["GET"])
 def discovery_authors():
     """Return authors in the discovery collection."""
-    return jsonify([{
-        "name": "Barack Obama",
-        "id": "1",
-        "image_url": "https://picsum.photos/100"
-    }, {
-        "name": "Dr. Mantis Tabogan",
-        "id": "2",
-        "image_url": "https://picsum.photos/100"
-    }, {
-        "name": "Helen Keller",
-        "id": "3",
-        "image_url": "https://picsum.photos/100"
-    }])
+    with open('./authors.txt') as f:
+        authors = f.read().split('\n')
+    return jsonify(authors)
