@@ -1,19 +1,12 @@
 """Routes that make calls to the discovery engine API."""
-from pathlib import Path
-import sys
-path = str(Path().absolute().parent)
-sys.path.insert(0, path)
-
-
 from flask import Blueprint, Response, request, jsonify
 from discovery import DISCOVERY_ENV, get_discovery_client
 from exceptions import ClientException
-
+from tone_analyzer import analyze_tone
 
 discovery_bp = Blueprint("discovery_bp", __name__)
 
-
-MAX_PASSAGES = 10
+MAX_PASSAGES = 5
 
 
 class Suggestion:
@@ -54,24 +47,36 @@ class Suggestion:
         self._text = sentence
         return self
 
+    def analyze_tone(self):
+        self._tone = analyze_tone(self._text)
+
     def to_dict(self):
         """Serialize the suggestion to a dictionary."""
         return {
             "document_id": self._document_id,
             "text": self._text,
             "score": self._score,
-            "author": self._author
+            "author": self._author,
+            "tone": self._tone
         }
 
 
-def _build_suggestions(sentence, results, passages):
+def _build_suggestions(
+    sentence,
+    results,
+    passages,
+    authors,
+    with_tones=True
+):
     """Build suggestions based on the a sentence and discovery query."""
     words = sentence.split(" ")
     suggestions = []
-    for passage in passages:
-        author = next((result.get("author", None) for result in results if result["id"] == passage["document_id"]), None)
+    for i, passage in enumerate(passages):
+        author = authors[i]
         suggestion = Suggestion.from_passage(passage, author=author)
         suggestion.trim_to_contain(words)
+        if with_tones:
+            suggestion.analyze_tone()
         suggestions.append(suggestion.to_dict())
     return suggestions
 
@@ -90,18 +95,46 @@ def discovery_suggest():
     client = get_discovery_client()
     data = request.get_json()
     sentence = data.get("sentence", None)
+    authors = data.get("authors", [])
+    doctype = data.get("type", None)
+    docfilter = ""
     if not sentence:
         raise ClientException("\"sentence\" not provided.")
+    if doctype:
+        docfilter += f'type::"{doctype}"'
+    if authors:
+        if docfilter:
+            docfilter += ','
+        author_str = ','.join([f'"{author}"' for author in authors])
+        docfilter += f'author::{author_str}'
     query_res = client.query(
         DISCOVERY_ENV["ENV_ID"],
         DISCOVERY_ENV["COLLECTION_ID"],
         natural_language_query=sentence,
         passages_count=MAX_PASSAGES,
-        return_fields=["passages"]
+        return_fields=["passages"],
+        filter=docfilter or None
     )
     passages = query_res.result["passages"]
     results = query_res.result["results"]
-    suggestions = _build_suggestions(sentence, results, passages)
+    authors = []
+    tones = []
+    for passage in passages:
+        docid = passage["document_id"]
+        doc_res = client.query(
+            DISCOVERY_ENV["ENV_ID"],
+            DISCOVERY_ENV["COLLECTION_ID"],
+            return_fields=["author"],
+            filter=f'id::"{docid}"'
+        )
+        authors.append(doc_res.result["results"][0].get("author", None))
+    suggestions = _build_suggestions(
+        sentence,
+        results,
+        passages,
+        authors,
+        with_tones=True
+    )
     return jsonify(suggestions)
 
 @discovery_bp.route("/discovery/authors/", methods=["GET"])

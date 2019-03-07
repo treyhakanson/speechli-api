@@ -14,3 +14,16 @@ def get_tone_analyzer_client():
         url= TONE_IAM_URL
     )
     return tone_analyzer
+
+
+def analyze_tone(text):
+    client = get_tone_analyzer_client()
+    tone_analysis = client.tone(
+        {
+            "text": text
+        },
+        "application/json"
+    ).get_result()
+    print(tone_analysis)
+    tone = ', '.join([tone['tone_name'] for tone in tone_analysis['document_tone']['tones']] or ['Neutral'])
+    return tone
