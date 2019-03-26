@@ -57,7 +57,7 @@ class Suggestion:
             "text": self._text,
             "score": self._score,
             "author": self._author,
-            "tone": self._tone
+            "tone": getattr(self, '_tone', 'Neutral')
         }
 
 
