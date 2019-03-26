@@ -41,6 +41,3 @@ def test_trim_to_contain():
 	suggestion.trim_to_contain('First')
 
 	assert('First line' == suggestion.to_dict()['text'])
-
-def test_failure():
-	assert 0
