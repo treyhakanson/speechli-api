@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.com/treyhakanson/speechli-api.svg?branch=master)](https://travis-ci.com/treyhakanson/speechli-api)
+[![Build Status](https://travis-ci.org/treyhakanson/speechli-api.svg?branch=master)](https://travis-ci.com/treyhakanson/speechli-api)
 
 # Speechli API
 
