@@ -1,4 +1,5 @@
 """Routes that make calls to the discovery engine API."""
+import random
 from flask import Blueprint, Response, request, jsonify
 from discovery import DISCOVERY_ENV, get_discovery_client
 from exceptions import ClientException
@@ -143,3 +144,40 @@ def discovery_authors():
     with open('./authors.txt') as f:
         authors = f.read().split('\n')
     return jsonify(authors)
+
+@discovery_bp.route("/discovery/moonshot/", methods=["POST"])
+def discovery_moonshot():
+    """Moonshots a give document."""
+    client = get_discovery_client()
+    data = request.get_json()
+    sentences = data.get("sentences", None)
+    authors = data.get("authors", [])
+    if not sentences:
+        raise ClientException("\"sentence\" not provided.")
+    if not authors:
+        raise ClientException("\"authors\" not provided.")
+    author_str = ','.join([f'"{author}"' for author in authors])
+    docfilter = f'author::{author_str}'
+    sentence_mapping = {}
+    for sentence in sentences:
+        query_res = client.query(
+            DISCOVERY_ENV["ENV_ID"],
+            DISCOVERY_ENV["COLLECTION_ID"],
+            natural_language_query=sentence,
+            passages_count=MAX_PASSAGES,
+            return_fields=["passages"],
+            filter=docfilter
+        )
+        passages = query_res.result["passages"]
+        results = query_res.result["results"]
+        suggestions = _build_suggestions(
+            sentence,
+            results,
+            passages,
+            [None] * len(passages)
+        )
+        if suggestions:
+            suggestion = max(suggestions, key=lambda x: x['score'])
+            if random.random() >= 0.5:
+                sentence_mapping[sentence] = suggestion['text']
+    return jsonify(sentence_mapping)
